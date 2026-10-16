@@ -1,7 +1,7 @@
 {
   "name": "dsh-batch-uninstall",
-  "version": "1.1.0",
-  "description": "Geek 风格批量卸载 DSH 插件：内置设置页面，勾选多个插件批量卸载，核心系统插件自动锁定保护。A Geek-Uninstaller-style batch uninstaller built into the DSH settings dialog.",
+  "version": "1.0.0",
+  "description": "Geek 风格批量卸载 DSH 插件：通过 HTTP API 列出可卸载 Bundle 并批量移除，核心系统插件自动锁定保护。A Geek-Uninstaller-style batch uninstaller for DeepSeek Harness plugins.",
   "type": "module",
   "main": "lib/index.js",
   "types": "lib/index.d.ts",
@@ -27,24 +27,20 @@
   },
   "exports": {
     ".": "./lib/index.js",
-    "./client": "./client/client.js",
     "./package.json": "./package.json",
     "./cordis.patch.yml": "./cordis.patch.yml"
   },
   "files": [
     "lib",
-    "client",
     "cordis.patch.yml",
     "README.md",
     "LICENSE",
+    "dsh_geek_uninstall.py",
     "dsh_plugins.json"
   ],
   "dsh": {
     "bundle": {
       "patch": "./cordis.patch.yml"
-    },
-    "client": {
-      "platform": "web"
     },
     "engines": {
       "dsh": ">=0.2.0-rc.1"
