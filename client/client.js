@@ -388,34 +388,91 @@
       // module exports — the host calls apply(ctx) with the client context
       // ─────────────────────────────────────────────────────────
       MOD.exports.name = NAME
-      MOD.exports.inject = ['slots', 'styles']
-      MOD.exports.apply = function (ctx) {
-        // stylesheet: inserted once, retracted with the client run
-        var styles = dt('styles')
-        var removeCss = typeof styles.insert === 'function' ? styles.insert(CSS) : null
 
-        var slots = ctx.slots
-        if (!slots || typeof slots.register !== 'function') {
-          console.error('[dsh-batch-uninstall] slots service unavailable — section not registered')
-          return
+      /**
+       * NO module-level inject, deliberately.
+       *
+       * A client plugin that names a service this host does not provide keeps
+       * its fiber PENDING forever, and the shell counts a pending entry as a
+       * failed boot ("N entries did not activate") — one wrong name takes the
+       * whole GUI down with it. That is exactly what `inject: ['slots',
+       * 'styles']` did in 1.1.0: `styles` is not a service at all (it is a
+       * module-table builtin, reached with dt('styles')), so the plugin never
+       * activated and every session failed to boot.
+       *
+       * So: no hard dependencies here, and `slots` is reached through a NESTED
+       * ctx.inject below, which pends on its own without blocking the shell.
+       * Everything is wrapped so a throw in here can never escape into the
+       * host's client-plugin bootstrap path.
+       */
+      MOD.exports.inject = []
+
+      MOD.exports.apply = function (ctx) {
+        var disposers = []
+
+        function cleanup() {
+          for (var i = 0; i < disposers.length; i++) {
+            try { disposers[i]() } catch (e) { /* already gone */ }
+          }
+          disposers = []
         }
 
-        var off = slots.register({
-          name: 'settings.section',
-          id: NS,
-          order: 45,
-          label: function () { return LOCALE[localeOf()].nav },
-          inject: function () { return {} },
-        }, function () {
-          return h(Panel)
-        })
-
-        ctx.effect(function () {
-          return function () {
-            if (typeof off === 'function') { try { off() } catch (e) { /* already gone */ } }
-            if (typeof removeCss === 'function') removeCss()
+        try {
+          // `styles` is a client BUILTIN: dt('styles') is the lookup.
+          // Never name it in inject — see the note above.
+          try {
+            var styles = dt('styles')
+            if (styles && typeof styles.insert === 'function') {
+              var removeCss = styles.insert(CSS)
+              if (typeof removeCss === 'function') disposers.push(removeCss)
+            }
+          } catch (e) {
+            console.error('[dsh-batch-uninstall] stylesheet insert failed (panel will render unstyled)', e)
           }
-        }, 'dsh-batch-uninstall: section + css')
+
+          if (!ctx || typeof ctx.inject !== 'function') {
+            console.error('[dsh-batch-uninstall] ctx.inject unavailable — settings section not registered')
+            return
+          }
+
+          // Nested: waits for `slots` on its own fiber, so an absent service
+          // costs the section, never the boot.
+          ctx.inject(['slots'], function (scoped) {
+            try {
+              var slots = scoped && scoped.slots
+              if (!slots || typeof slots.register !== 'function') {
+                console.error('[dsh-batch-uninstall] slots service unavailable — settings section not registered')
+                return
+              }
+
+              var off = slots.register({
+                name: 'settings.section',
+                id: NS,
+                order: 45,
+                label: function () { return (LOCALE[localeOf()] || LOCALE.zh).nav },
+                inject: function () { return {} },
+              }, function () {
+                return h(Panel)
+              })
+
+              if (typeof off === 'function') disposers.push(off)
+            } catch (e) {
+              console.error('[dsh-batch-uninstall] settings section registration failed', e)
+            }
+          })
+
+          try {
+            if (typeof ctx.effect === 'function') {
+              ctx.effect(function () { return cleanup }, 'dsh-batch-uninstall: section + css')
+            }
+          } catch (e) {
+            console.error('[dsh-batch-uninstall] effect registration failed (panel stays mounted)', e)
+          }
+        } catch (error) {
+          // The host runs this factory on the boot path with nothing between it
+          // and the shell, so a throw here would blank the GUI. Contain it.
+          console.error('[dsh-batch-uninstall] apply failed; plugin inactive this session, app unaffected', error)
+        }
       }
 
       return MOD.exports
