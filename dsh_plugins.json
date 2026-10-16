@@ -1,0 +1,83 @@
+{
+  "entries": [
+    {
+      "name": "@deepseek-ai/dsh-base",
+      "version": "0.2.0-rc.2",
+      "description": "The shared dsh core as a profile bundle",
+      "enabled": true,
+      "installed": false,
+      "optional": false,
+      "removable": false
+    },
+    {
+      "name": "@deepseek-ai/dsh-web-app",
+      "version": "0.2.0-rc.2",
+      "description": "The dsh browser-surface bundle",
+      "enabled": true,
+      "installed": false,
+      "optional": false,
+      "removable": false
+    },
+    {
+      "name": "dsh-our-free-model",
+      "version": "2.3.0",
+      "description": "Our Free Model — 多模型免费接入插件",
+      "enabled": true,
+      "installed": true,
+      "removable": true
+    },
+    {
+      "name": "dsh-boot-animation",
+      "version": "0.4.2",
+      "description": "DSH 片头开机动画",
+      "enabled": true,
+      "installed": true,
+      "removable": true
+    },
+    {
+      "name": "dshmarket",
+      "version": "1.66.17",
+      "description": "DSH 可视化插件市场",
+      "enabled": true,
+      "installed": true,
+      "removable": true
+    },
+    {
+      "name": "@deepseek-ai/dsh-experimental-agent-team-profile",
+      "version": "0.2.0-rc.2",
+      "description": "Agent Teams 协作实验性插件",
+      "enabled": false,
+      "installed": false,
+      "optional": true,
+      "removable": false
+    },
+    {
+      "name": "@deepseek-ai/dsh-experimental-schedule-bundle",
+      "version": "0.2.0-rc.2",
+      "description": "定时任务实验性插件",
+      "enabled": false,
+      "installed": false,
+      "optional": true,
+      "removable": false
+    },
+    {
+      "name": "@deepseek-ai/dsh-experimental-voice-input-bundle",
+      "version": "0.2.0-rc.2",
+      "description": "语音输入实验性插件",
+      "enabled": false,
+      "installed": false,
+      "optional": true,
+      "removable": false
+    },
+    {
+      "name": "@deepseek-ai/dsh-experimental-auto-review",
+      "version": "0.2.0-rc.2",
+      "description": "Auto 权限 LLM 审查实验性插件",
+      "enabled": false,
+      "installed": false,
+      "optional": true,
+      "removable": false
+    }
+  ],
+  "total": 9
+}
