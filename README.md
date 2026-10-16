@@ -1,113 +1,105 @@
 # dsh-batch-uninstall
 
-[![npm](https://img.shields.io/npm/v/dsh-batch-uninstall)](https://www.npmjs.com/package/dsh-batch-uninstall)
 [![License](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
+[![DSH](https://img.shields.io/badge/DSH-%3E%3D0.2.0--rc.1-blue.svg)](https://github.com/deepseek-ai)
 
 **Geek Uninstaller 风格的 DeepSeek Harness (DSH) 批量插件卸载器。**
 
-一个规范的 DSH 插件（npm + Cordis），暴露本地 HTTP API，配合内置的 Python TUI 实现「勾选 → 二次确认 → 批量卸载」的交互式体验。核心系统插件自动锁定，防止误删。
+一个规范的 DSH 插件（Cordis bundle + client 设置页）。安装后在 **DSH 设置 → 批量卸载** 打开，勾选多个插件一次性移除。核心系统插件自动锁定，防止误删。
 
 ```
-╭──────────────────────────────────────────────────────────────╮
-│            DSH Geek Uninstaller  v2.0                        │
-│            交互式插件卸载器 · Geek 风格                      │
-╰──────────────────────────────────────────────────────────────╯
+Geek Uninstaller — 批量插件卸载器
+勾选要卸载的插件后批量移除。核心系统插件已锁定保护。 · v1.2.1
 
-📦 DSH 插件管理
-共 9 个  |  可卸载 3  |  🔒 核心保护 6  |  已勾选 0
+  共 15   可卸载 5   锁定 10   已勾选 0     [刷新] [全选] [全不选] [卸载选中项]
 
-  🔒  @deepseek-ai/dsh-base                系统    ⚠ 高
-  🔒  @deepseek-ai/dsh-web-app             系统    ⚠ 高
-▶ ☐  dsh-our-free-model                   活跃    ○ 低
-  ☐  dsh-boot-animation                   活跃    ○ 低
-  ☐  dshmarket                            活跃    ○ 低
-
-  ↑↓ 移动  Space 勾选  Ctrl+A 全选/反选  Enter 确认  Q 退出
+  🔒 @deepseek-ai/dsh-base        0.2.0-rc.2   🔒 核心
+  🔒 @deepseek-ai/dsh-web-app     0.2.0-rc.2   🔒 核心
+  ☐  dsh-our-free-model           2.3.0        ○ 低
+  ☐  dshmarket                    1.66.27      ○ 低
+  ☐  dsh-cost-meter               1.8.31       ○ 低
+  ☐  dsh-batch-uninstall          1.2.1        ○ 低
 ```
+
+## 功能
+
+- **内置设置页** — 不需浏览器地址、不需 Python、不需任何外部文件，装在 DSH 里直接用
+- **多选批量卸载** — 逐个勾选、全选、全不选，一次卸载任意多个
+- **二次确认** — 红色确认框列出全部目标，防误删
+- **实时进度** — 进度条 + 逐条成功/失败日志
+- **核心保护** — `@deepseek-ai/dsh-*` 等系统 bundle 锁定置灰，无法勾选
+- **风险分级** — 高 / 中 / 低三档提示
+- **主题自适应** — 跟随 DSH 浅色 / 深色主题
+- **中英双语** — 跟随 DSH 语言设置
 
 ## 安装
 
 ```bash
-# 方式一：通过 DSH 插件市场 / CLI 安装
-dsh plugin add dsh-batch-uninstall
-
-# 方式二：本地开发安装
-cd <你的 profile 目录>
-npm install dsh-batch-uninstall
+dsh plugin --profile <你的 profile> add github:MaYucong6/dsh-batch-uninstall
 ```
 
-安装后重启 DSH，插件会挂载 HTTP API（`/dsh-batch-uninstall/*`）。
+或在 DSH 插件市场搜索 `dsh-batch-uninstall`。
 
-## 使用
-
-```bash
-# 运行 Python TUI（自动连接插件 API 获取真实插件列表）
-python dsh_geek_uninstall.py
-
-# 强制使用内置示例数据（插件未运行时）
-python dsh_geek_uninstall.py --json dsh_plugins.json
-```
-
-### 交互操作
-
-| 按键 | 功能 |
-|------|------|
-| `↑` `↓` | 移动光标（自动跳过 🔒 锁定行） |
-| `Space` | 勾选 / 取消勾选 |
-| `Ctrl`+`A` | 全选 / 反选 |
-| `Enter` | 确认 → 二次确认 → 批量卸载 |
-| `Q` | 退出 |
+安装后重启 DSH（或刷新页面），设置左侧会出现 **「批量卸载」** 入口。
 
 ## 架构
 
 ```
-┌─────────────────────────────────────────────┐
-│  dsh_geek_uninstall.py (Python TUI)         │
-│  交互式勾选 · 二次确认 · 进度条              │
-└──────────────┬──────────────────────────────┘
-               │ HTTP (localhost:19387)
-               ▼
-┌─────────────────────────────────────────────┐
-│  lib/index.js (Host 插件)                   │
-│  GET  /dsh-batch-uninstall/bundles.json     │
-│  POST /dsh-batch-uninstall/remove           │
-└──────────────┬──────────────────────────────┘
-               │ ctx.get('pluginManager')
-               ▼
-┌─────────────────────────────────────────────┐
-│  DSH pluginManager 服务                     │
-│  listBundles() / removeBundle(name)         │
-└─────────────────────────────────────────────┘
+┌─────────────────────────────────────────────────────┐
+│  client/client.js  (Client 半 · 设置页 UI)          │
+│  勾选 · 全选 · 二次确认 · 进度条 · 日志              │
+└───────────────┬─────────────────────────────────────┘
+                │ HTTP (localhost)
+                ▼
+┌─────────────────────────────────────────────────────┐
+│  lib/index.js  (Host 半 · HTTP API)                 │
+│  GET  /dsh-batch-uninstall/bundles.json             │
+│  POST /dsh-batch-uninstall/remove                   │
+└───────────────┬─────────────────────────────────────┘
+                │ ctx.get('pluginManager')
+                ▼
+┌─────────────────────────────────────────────────────┐
+│  DSH pluginManager 服务                             │
+│  listBundles() / removeBundle(name)                 │
+└─────────────────────────────────────────────────────┘
 ```
+
+Host 半走 DSH 自己的 `pluginManager` 服务，与内置插件管理器同一套护栏；Client 半只注入 `slots`（真实服务），样式内联且不依赖主题变量名，任何异常都被隔离，插件失效也**绝不会**影响 DSH 启动。
 
 ## 核心保护
 
-以下 Bundle 无法被卸载（Host 与 TUI 双层锁定）：
+以下 Bundle 无法被卸载（Host 与 Client 双层锁定）：
 
 | 保护对象 | 说明 |
 |----------|------|
 | `@deepseek-ai/dsh-base` | 核心基础层 |
 | `@deepseek-ai/dsh-web-app` | Web 应用层 |
 | `@deepseek-ai/dsh-sdk-*` | SDK 配置 |
+| `@deepseek-ai/dsh-headless` / `acp-app` | 其他官方 profile |
 | 所有 `removable: false` 的 Bundle | 系统声明不可移除 |
 
 ## 文件说明
 
 | 文件 | 说明 |
 |------|------|
-| `lib/index.js` | Host 插件入口（暴露 HTTP API） |
+| `lib/index.js` | Host 半：HTTP API，调用 `pluginManager` |
+| `client/client.js` | Client 半：DSH 设置页里的批量卸载界面 |
 | `cordis.patch.yml` | Bundle 挂载补丁 |
-| `package.json` | npm 包清单（含 `dsh` 元数据） |
-| `dsh_geek_uninstall.py` | Python TUI 客户端 |
-| `dsh_batch_uninstall.py` | 旧版纯序号版本 |
+| `package.json` | npm 包清单（含 `dsh.bundle` + `dsh.client`） |
+| `dsh_geek_uninstall.py` | 可选：独立的 Python TUI 客户端（走同一套 HTTP API） |
 | `dsh_plugins.json` | 示例数据 |
+
+Python TUI 是可选的命令行替代界面，需要 `pip install rich`：
+
+```bash
+python dsh_geek_uninstall.py
+```
 
 ## 开发
 
 ```bash
-# 语法检查
 node --check lib/index.js
-python -m py_compile dsh_geek_uninstall.py
+node --check client/client.js
 ```
 
 ## License
