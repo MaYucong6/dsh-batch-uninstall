@@ -210,6 +210,21 @@ def is_removable(bundle: dict) -> bool:
 #  数据加载
 # ═══════════════════════════════════════════════════════════
 
+def _http_json(url: str, method: str = "GET", payload: Optional[dict] = None, timeout: int = 8) -> Optional[dict]:
+    """发送 HTTP 请求并解析 JSON，失败返回 None。"""
+    try:
+        data = None
+        headers = {"Accept": "application/json"}
+        if payload is not None:
+            data = json.dumps(payload).encode("utf-8")
+            headers["Content-Type"] = "application/json"
+        req = urllib.request.Request(url, data=data, method=method, headers=headers)
+        with urllib.request.urlopen(req, timeout=timeout) as resp:
+            return json.loads(resp.read().decode("utf-8"))
+    except Exception:
+        return None
+
+
 def fetch_bundles_api() -> Optional[dict]:
     """从 DSH REST API 获取 Bundle 列表。"""
     url = f"{DSH_API_BASE}/api/plugin-manager/bundles"
@@ -220,6 +235,11 @@ def fetch_bundles_api() -> Optional[dict]:
             return json.loads(resp.read().decode("utf-8"))
     except Exception:
         return None
+
+
+def fetch_bundles_plugin() -> Optional[dict]:
+    """从 dsh-batch-uninstall 插件的 HTTP API 获取 Bundle 列表（推荐）。"""
+    return _http_json(f"{DSH_API_BASE}/dsh-batch-uninstall/bundles.json")
 
 
 def load_bundles_file(path: Path) -> Optional[dict]:
@@ -332,38 +352,56 @@ def builtin_data() -> dict:
 
 
 def load_all_bundles() -> list[dict]:
-    """加载 Bundle 列表（API → 文件 → 内置）。"""
+    """加载 Bundle 列表（插件 API → REST API → 文件 → 内置）。"""
     source = ""
 
-    if "--fetch" in sys.argv:
-        console.print("[cyan]  ⟳  正在从 DSH REST API 获取插件列表...[/]", end="\r")
-        raw = fetch_bundles_api()
-        if raw is not None:
-            source = "DSH REST API"
-        else:
-            console.print("[yellow]  ⚠  REST API 不可用，回退到本地数据     [/]")
-            raw = None
+    # 1. 优先尝试 dsh-batch-uninstall 插件的 HTTP API（能拿到真实、已分类的列表）
+    raw = fetch_bundles_plugin()
+    if raw is not None and raw.get("ok"):
+        source = "dsh-batch-uninstall 插件 API"
     else:
         raw = None
-        for i, a in enumerate(sys.argv):
-            if a == "--json" and i + 1 < len(sys.argv):
-                raw = load_bundles_file(Path(sys.argv[i + 1]))
-                source = f"JSON 文件 ({sys.argv[i + 1]})"
-                break
+        # 2. 其次尝试 DSH 原生 REST API
+        if "--fetch" in sys.argv:
+            console.print("[cyan]  ⟳  正在从 DSH REST API 获取插件列表...[/]", end="\r")
+            raw = fetch_bundles_api()
+            if raw is not None:
+                source = "DSH REST API"
+            else:
+                console.print("[yellow]  ⚠  REST API 不可用，回退到本地数据     [/]")
+                raw = None
+        # 3. 再尝试 JSON 文件
+        if raw is None:
+            for i, a in enumerate(sys.argv):
+                if a == "--json" and i + 1 < len(sys.argv):
+                    raw = load_bundles_file(Path(sys.argv[i + 1]))
+                    source = f"JSON 文件 ({sys.argv[i + 1]})"
+                    break
         if raw is None:
             raw = load_bundles_file(DEFAULT_PLUGIN_FILE)
-            source = f"JSON 文件 ({DEFAULT_PLUGIN_FILE})"
+            if raw is not None:
+                source = f"JSON 文件 ({DEFAULT_PLUGIN_FILE})"
 
+    # 4. 最后回退到内置示例数据
     if raw is None:
         raw = builtin_data()
         source = "内置示例数据"
 
     bundles = parse_bundles(raw)
 
-    # 修复：标记核心
+    # 归一化：插件 API 返回的分类字段直接采用，其余本地计算
     for b in bundles:
-        b["_core"] = is_core(b)
-        b["_risk"] = classify_risk(b)
+        if b.get("core") is True:
+            b["_core"] = True
+            b["_risk"] = b.get("risk", RISK_HIGH)
+        else:
+            b["_core"] = is_core(b)
+            b["_risk"] = b.get("risk", classify_risk(b))
+        # 插件 API 已给出精确的 removable 标记
+        if "removable" in b:
+            b["_removable"] = bool(b["removable"])
+        else:
+            b["_removable"] = is_removable(b)
 
     console.print(f"[dim]  数据来源: {source}  |  {len(bundles)} 个 Bundle 已加载[/]")
     time.sleep(0.4)
@@ -376,6 +414,18 @@ def load_all_bundles() -> list[dict]:
 
 def uninstall_one(name: str) -> tuple[bool, str]:
     """尝试卸载单个插件，返回 (成功, 消息)。"""
+    # 方式 0: dsh-batch-uninstall 插件的批量接口（推荐）
+    resp = _http_json(
+        f"{DSH_API_BASE}/dsh-batch-uninstall/remove",
+        method="POST",
+        payload={"names": [name]},
+    )
+    if resp is not None and resp.get("ok") is True:
+        return True, "插件 API"
+    if resp is not None and isinstance(resp.get("results"), list):
+        item = resp["results"][0] if resp["results"] else {}
+        return bool(item.get("ok")), str(item.get("error") or "插件 API")
+
     # 方式 1: REST API DELETE
     url = f"{DSH_API_BASE}/api/plugin-manager/bundles/{name}"
     try:

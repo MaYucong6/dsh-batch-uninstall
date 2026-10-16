@@ -1,0 +1,52 @@
+{
+  "name": "dsh-batch-uninstall",
+  "version": "1.0.0",
+  "description": "Geek 风格批量卸载 DSH 插件：通过 HTTP API 列出可卸载 Bundle 并批量移除，核心系统插件自动锁定保护。A Geek-Uninstaller-style batch uninstaller for DeepSeek Harness plugins.",
+  "type": "module",
+  "main": "lib/index.js",
+  "types": "lib/index.d.ts",
+  "license": "MIT",
+  "author": "MaYucong6",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/MaYucong6/dsh-batch-uninstall.git"
+  },
+  "keywords": [
+    "dsh",
+    "dsh-plugin",
+    "deepseek-harness",
+    "deepseek",
+    "harness",
+    "plugin-manager",
+    "uninstall",
+    "uninstaller",
+    "batch"
+  ],
+  "engines": {
+    "node": ">=20"
+  },
+  "exports": {
+    ".": "./lib/index.js",
+    "./package.json": "./package.json",
+    "./cordis.patch.yml": "./cordis.patch.yml"
+  },
+  "files": [
+    "lib",
+    "cordis.patch.yml",
+    "README.md",
+    "LICENSE",
+    "dsh_geek_uninstall.py",
+    "dsh_plugins.json"
+  ],
+  "dsh": {
+    "bundle": {
+      "patch": "./cordis.patch.yml"
+    },
+    "engines": {
+      "dsh": ">=0.2.0-rc.1"
+    }
+  },
+  "publishConfig": {
+    "registry": "https://registry.npmjs.org/"
+  }
+}

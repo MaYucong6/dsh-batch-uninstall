@@ -1,0 +1,9 @@
+# dsh-batch-uninstall bundle patch.
+#
+# One `insert` line mounts the Host half onto the bundle row.
+# The row's `name` is the bare package name, which is how the loader
+# resolves the package from the profile's node_modules.
+- insert:
+    - id: batch-uninstall
+      name: 'dsh-batch-uninstall'
+      config: {}
