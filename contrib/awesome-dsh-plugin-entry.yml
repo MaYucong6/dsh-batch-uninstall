@@ -1,0 +1,14 @@
+# 此文件用于提交到 awesome-dsh-plugin 仓库的 PR
+# 目标路径：data/plugins/MaYucong6__dsh-batch-uninstall.yml
+#
+# 提交方式（仓库创建满 1 天后）：
+#   1. fork https://github.com/awesome-dsh-plugin/awesome-dsh-plugin
+#   2. 在 fork 中创建此文件：data/plugins/MaYucong6__dsh-batch-uninstall.yml
+#   3. 提交 PR 到 upstream main
+
+url: https://github.com/MaYucong6/dsh-batch-uninstall
+name: MaYucong6/dsh-batch-uninstall
+category: market
+description:
+  en: Batch-uninstall DeepSeek Harness plugin bundles through a host HTTP API, with an interactive terminal UI for multi-select and progress display.
+  zh: 通过 Host HTTP API 批量卸载 DSH 插件 Bundle，附带交互式终端多选与进度显示。
