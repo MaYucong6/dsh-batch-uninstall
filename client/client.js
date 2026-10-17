@@ -230,7 +230,7 @@
           h('style', null, CSS),
           h('div', { className: 'bu-head' },
             h('div', { className: 'bu-title' }, h('span', { className: 'geek' }, 'Geek'), ' Uninstaller — ' + L.title),
-            h('div', { className: 'bu-sub' }, L.sub + ' · v1.2.1')
+            h('div', { className: 'bu-sub' }, L.sub + ' · v1.2.2')
           ),
           h('div', { className: 'bu-toolbar' },
             h('span', { className: 'bu-stat' }, h('span', { className: 'bu-k' }, L.total), h('b', null, String(entries.length))),

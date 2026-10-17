@@ -9,7 +9,7 @@
 
 ```
 Geek Uninstaller — 批量插件卸载器
-勾选要卸载的插件后批量移除。核心系统插件已锁定保护。 · v1.2.1
+勾选要卸载的插件后批量移除。核心系统插件已锁定保护。 · v1.2.2
 
   共 15   可卸载 5   锁定 10   已勾选 0     [刷新] [全选] [全不选] [卸载选中项]
 
@@ -18,7 +18,7 @@ Geek Uninstaller — 批量插件卸载器
   ☐  dsh-our-free-model           2.3.0        ○ 低
   ☐  dshmarket                    1.66.27      ○ 低
   ☐  dsh-cost-meter               1.8.31       ○ 低
-  ☐  dsh-batch-uninstall          1.2.1        ○ 低
+  ☐  dsh-batch-uninstall          1.2.2        ○ 低
 ```
 
 ## 功能
