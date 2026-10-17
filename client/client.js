@@ -230,7 +230,7 @@
           h('style', null, CSS),
           h('div', { className: 'bu-head' },
             h('div', { className: 'bu-title' }, h('span', { className: 'geek' }, 'Geek'), ' Uninstaller — ' + L.title),
-            h('div', { className: 'bu-sub' }, L.sub + ' · v1.2.2')
+            h('div', { className: 'bu-sub' }, L.sub + ' · v1.2.3')
           ),
           h('div', { className: 'bu-toolbar' },
             h('span', { className: 'bu-stat' }, h('span', { className: 'bu-k' }, L.total), h('b', null, String(entries.length))),
@@ -332,15 +332,37 @@
             return
           }
 
-          var off = slots.register({
-            name: 'settings.section',
-            id: NS,
-            order: 45,
-            label: function () { return t().nav },
-            inject: function () { return {} },
-          }, function () {
-            return h(Panel)
-          })
+          var off = null
+
+          function registerSection() {
+            try {
+              off = slots.register({
+                name: 'settings.section',
+                id: NS,
+                order: 45,
+                label: function () { return t().nav },
+                inject: function () { return {} },
+              }, function () {
+                return h(Panel)
+              })
+            } catch (e) {
+              console.error('[dsh-batch-uninstall] settings.section register failed', e)
+            }
+          }
+
+          // The settings DIALOG is what declares `settings.section`; on a cold
+          // boot this plugin's apply() can run before the settings UI has
+          // declared that seat, and a register() against a slot that does not
+          // exist yet is dropped — which is why the page only appeared after
+          // toggling the plugin off and on (that re-ran apply() against a live
+          // slot). `slots.inject(name, cb)` waits for the seat instead, which
+          // is how dshmarket mounts its own condition. Fall back to a direct
+          // register when inject is missing, so an older host still works.
+          if (typeof slots.inject === 'function') {
+            slots.inject('settings.section', function () { registerSection() })
+          } else {
+            registerSection()
+          }
 
           if (ctx.effect && typeof ctx.effect === 'function') {
             ctx.effect(function () {
