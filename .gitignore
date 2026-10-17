@@ -14,3 +14,6 @@ Thumbs.db
 
 # 无关目录（非本项目内容）
 dsh-grid-layout/
+
+# 本机专用启动脚本（写死了本机 Python 路径，不随仓库分发）
+启动卸载器.bat
