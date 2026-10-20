@@ -70,6 +70,7 @@
           trashRestore: '恢复选中项', trashEmpty: '一键清空回收站',
           trashEmptyTitle: '确认清空回收站', trashEmptyWarn: '将永久删除回收站内所有内容，不可恢复！',
           trashEmptyDone: '已清空', trashRestored: '已恢复',
+          trashEmptyHint: '回收站是空的',
           workspaceDeleteDone: '删除完成', workspaceDeleteFailed: '删除失败',
         },
         en: {
@@ -91,6 +92,7 @@
           trashRestore: 'Restore selected', trashEmpty: 'Empty trash',
           trashEmptyTitle: 'Confirm empty trash', trashEmptyWarn: 'Permanently delete everything in trash. This cannot be undone!',
           trashEmptyDone: 'Emptied', trashRestored: 'Restored',
+          trashEmptyHint: 'Trash is empty',
           workspaceDeleteDone: 'Deleted', workspaceDeleteFailed: 'Delete failed',
         },
       }
@@ -545,7 +547,7 @@
             items === null
               ? h('div', { className: 'bu-empty' }, L.loading)
               : entries.length === 0
-                ? h('div', { className: 'bu-empty' }, L.empty)
+                ? h('div', { className: 'bu-empty' }, L.trashEmptyHint)
                 : entries.map(function (x) {
                     var isSel = !!checked[x.id]
                     return h('div', {
