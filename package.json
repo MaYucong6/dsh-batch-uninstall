@@ -1,7 +1,7 @@
 {
   "name": "dsh-batch-uninstall",
-  "version": "1.2.3",
-  "description": "Geek 风格批量卸载 DSH 插件：内置设置页面，勾选多个插件批量卸载，核心系统插件自动锁定保护。A Geek-Uninstaller-style batch uninstaller built into the DSH settings dialog.",
+  "version": "1.3.0",
+  "description": "Geek 风格 DSH 工具箱：批量卸载插件、批量删除工作区（软删除到回收站）、回收站管理，核心系统插件自动锁定保护。A Geek-style DSH toolbox: batch plugin uninstall, batch workspace delete (soft-delete to trash) and trash management.",
   "type": "module",
   "main": "lib/index.js",
   "types": "lib/index.d.ts",
